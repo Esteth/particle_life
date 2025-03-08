@@ -43,8 +43,8 @@ pub fn ui(
                     |ui| {
                         if ui.button("Toggle Fullscreen").clicked() {
                             window.mode = match window.mode {
-                                WindowMode::Windowed => WindowMode::BorderlessFullscreen,
-                                WindowMode::BorderlessFullscreen => WindowMode::Windowed,
+                                WindowMode::Windowed => WindowMode::BorderlessFullscreen(MonitorSelection::Primary),
+                                WindowMode::BorderlessFullscreen(_) => WindowMode::Windowed,
                                 _ => WindowMode::Windowed,
                             }
                         }
@@ -57,7 +57,7 @@ pub fn ui(
             ui.add(
                 egui::Slider::new(&mut relative_speed, 0.0..=10.)
                     .text("simulation speed")
-                    .clamp_to_range(false),
+                    .clamping(egui::SliderClamping::Never),
             );
             if relative_speed != before {
                 time.set_relative_speed(relative_speed);
@@ -66,25 +66,25 @@ pub fn ui(
             ui.add(
                 egui::Slider::new(&mut settings.particle_count, 0..=300_000)
                     .text("particle count")
-                    .clamp_to_range(false),
+                    .clamping(egui::SliderClamping::Never),
             );
 
             ui.add(
                 egui::Slider::new(&mut settings.min_distance, 0..=200)
                     .text("min distance")
-                    .clamp_to_range(false),
+                    .clamping(egui::SliderClamping::Never),
             );
             let mut max_distance = settings.max_distance();
             ui.add(
                 egui::Slider::new(&mut max_distance, 100..=1000)
                     .text("max distance")
-                    .clamp_to_range(false),
+                    .clamping(egui::SliderClamping::Never),
             );
             settings.update_max_distance(max_distance);
             ui.add(
                 egui::Slider::new(&mut settings.max_velocity, 1.0..=1000.0)
                     .text("max velocity")
-                    .clamp_to_range(false),
+                    .clamping(egui::SliderClamping::Never),
             );
             ui.add(
                 egui::Slider::new(&mut settings.velocity_half_life, 0.001..=2.0)
@@ -93,31 +93,31 @@ pub fn ui(
             ui.add(
                 egui::Slider::new(&mut settings.force_factor, 0.0..=30.0)
                     .text("force scale")
-                    .clamp_to_range(false),
+                    .clamping(egui::SliderClamping::Never),
             );
             let mut bounds = settings.bounds();
             ui.add(
                 egui::Slider::new(&mut bounds.x, 100..=30_000)
                     .text("bounds x")
-                    .clamp_to_range(false),
+                    .clamping(egui::SliderClamping::Never),
             );
             ui.add(
                 egui::Slider::new(&mut bounds.y, 100..=30_000)
                     .text("bounds y")
-                    .clamp_to_range(false),
+                    .clamping(egui::SliderClamping::Never),
             );
             settings.update_bounds(bounds);
 
             ui.add(
                 egui::Slider::new(&mut settings.max_attractions, 1..=30_000)
                     .text("max attractions")
-                    .clamp_to_range(false),
+                    .clamping(egui::SliderClamping::Never),
             );
 
             ui.add(
                 egui::Slider::new(&mut settings.color_count, 1..=COLORS.len())
                     .text("color count")
-                    .clamp_to_range(false),
+                    .clamping(egui::SliderClamping::Never),
             );
 
             if settings.color_count < 11 {
@@ -197,13 +197,13 @@ pub fn ui(
             ui.add(
                 egui::Slider::new(&mut settings.particle_size, 1.0..=100.0)
                     .text("particle_size")
-                    .clamp_to_range(false),
+                    .clamping(egui::SliderClamping::Never),
             );
 
             ui.add(
                 egui::Slider::new(&mut settings.circle_corners, 8..=128)
                     .text("circle_corners")
-                    .clamp_to_range(false),
+                    .clamping(egui::SliderClamping::Never),
             );
 
             ui.horizontal(|ui| {
@@ -216,11 +216,11 @@ pub fn ui(
             ui.add(egui::Slider::new(&mut settings.rgb_speed, 0.1..=10.).text("RGB speed"));
 
             if ui.button("Copy settings to clipboard").clicked() {
-                clipboard.set_contents(&settings.serialize());
+                clipboard.set_text(&settings.serialize());
             };
 
             if ui.button("Paste settings from clipboard").clicked() {
-                if let Some(s) = clipboard.get_contents() {
+                if let Some(s) = clipboard.get_text() {
                     if let Some(s) = SimulationSettings::deserialize(&s) {
                         *settings = s;
                         event_writer.send(ParticleEvent::RandomizeColors);

@@ -5,6 +5,7 @@ use rand::seq::SliceRandom;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 
+
 pub const COLORS: &[Srgba] = &[
     tailwind::EMERALD_600,
     tailwind::BLUE_600,
@@ -58,13 +59,6 @@ pub enum AccelerationMethod {
     Deg90,
     Attr,
     Planets,
-}
-
-pub fn random_colors(count: usize) -> Vec<Color> {
-    COLORS
-        .choose_multiple(&mut rand::thread_rng(), count)
-        .map(|c| (*c).into())
-        .collect()
 }
 
 #[derive(Resource, Serialize, Deserialize, Debug, Clone)]
@@ -126,14 +120,14 @@ impl Default for SimulationSettings {
 
 impl SimulationSettings {
     pub fn randomize_colors(&mut self) {
-        self.color_order.shuffle(&mut rand::thread_rng());
+        self.color_order.shuffle(&mut rand::rng());
     }
 
     pub fn randomize_attractions(&mut self) {
         self.matrix = (0..COLORS.len())
             .map(|_| {
                 (0..COLORS.len())
-                    .map(|_| rand::thread_rng().gen_range(-1.0..1.0))
+                    .map(|_| rand::rng().random_range(-1.0..1.0))
                     .collect()
             })
             .collect();

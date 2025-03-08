@@ -32,7 +32,7 @@ fn main() {
 
 fn setup(mut commands: Commands) {
     commands.spawn((
-        Camera2dBundle::default(),
+        Camera2d,
         CameraSettings {
             pan_speed: 1.,
             scroll_speed: 1.,

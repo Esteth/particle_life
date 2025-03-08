@@ -290,8 +290,8 @@ fn extract_particle_related_things(
     let matrix = ColorMatrix::new(&settings.matrix);
 
     let gpu_settings = GpuSettings {
-        time: time.elapsed_seconds(),
-        delta_time: time.delta_seconds(),
+        time: time.elapsed_secs(),
+        delta_time: time.delta_secs(),
         particle_count: settings.particle_count as u32,
         min_distance: settings.min_distance as f32,
         max_distance: settings.max_distance() as f32,
@@ -314,7 +314,7 @@ fn extract_particle_related_things(
         rgb_speed: settings.rgb_speed,
 
         cell_count: settings.cell_count(),
-        seed: rand::thread_rng().gen(),
+        seed: rand::rng().random(),
 
         color_count: settings.color_count as u32,
         max_color_count: COLORS.len() as u32,
@@ -360,14 +360,6 @@ pub fn linear_f32_from_gamma_u8(s: u8) -> f32 {
 }
 
 #[test]
-fn test_surrounding_cells() {
-    let cells = UVec2::new(3, 3);
-    let cell = UVec2::new(2, 2);
-    let surrounding = surrounding_cells(cell, cells);
-    println!("{:?}", surrounding);
-}
-
-#[test]
 fn test_manual_rem_euclid() {
     fn rem_euclid(a: i32, b: i32) -> i32 {
         (a % b + b) % b
@@ -383,31 +375,6 @@ fn test_manual_rem_euclid() {
     assert_eq!(rem_euclid(-4, 3), 2);
     assert_eq!(rem_euclid(2, 2), 0);
     assert_eq!(rem_euclid(-2, 2), 0);
-}
-
-fn surrounding_cells(cell: UVec2, cells: UVec2) -> [u32; 9] {
-    let minus_x = (cell.x as i32 - 1).rem_euclid(cells.x as i32) as u32;
-    let minus_y = (cell.y as i32 - 1).rem_euclid(cells.y as i32) as u32;
-    let plus_x = (cell.x as i32 + 1).rem_euclid(cells.x as i32) as u32;
-    let plus_y = (cell.y as i32 + 1).rem_euclid(cells.y as i32) as u32;
-    let middle_x = cell.x;
-    let middle_y = cell.y;
-
-    let below = minus_y * cells.x;
-    let middle = middle_y * cells.x;
-    let above = plus_y * cells.x;
-
-    [
-        minus_x + below,
-        middle_x + below,
-        plus_x + below,
-        minus_x + middle,
-        middle_x + middle,
-        plus_x + middle,
-        minus_x + above,
-        middle_x + above,
-        plus_x + above,
-    ]
 }
 
 #[derive(Resource)]
@@ -437,6 +404,7 @@ impl FromWorld for ParticlePipelines {
                     shader: shader.clone(),
                     shader_defs: vec![],
                     entry_point: label.into(),
+                    zero_initialize_workgroup_memory: false,
                 },
             )
         };
